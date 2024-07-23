@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Test API</title>
+  <title>Real Time Villagers Glycemie (Glucose)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -9,25 +9,67 @@
   </style>
 </head>
 <body>
-  <h1>Test API</h1>
-  <div id="api-response"></div>
+  <h1>Villagers Glycemie (Glucose) in <bold>Real Time</bold></h1>
+  <div id="glucose-data"></div>
   <script>
-    const testApiEndpoint = "https://jsonplaceholder.typicode.com/posts/1";
+    const clientId = "nNXGVFjfc0JPMsWd4pvYOwseT0x0b67x";
+    const clientSecret = "LejCpzAJQJnI64QO";
 
-    fetch(testApiEndpoint)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+    const tokenEndpoint = "https://sandbox-api.dexcom.com/v3/oauth2/token";
+    const glucoseEndpoint = "https://sandbox-api.dexcom.com/v3/users/self/egvs";
+
+    const authorizationCode = "533d33c28705a6c8f06c2a3fde87da30";
+    const redirectUri = "https://villagers-glycemie.netlify.app"; // URL de redirection sur Netlify
+
+    fetch(tokenEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: `grant_type=authorization_code&code=${authorizationCode}&redirect_uri=${redirectUri}&client_id=${clientId}&client_secret=${clientSecret}`
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch token');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (!data.access_token) {
+        throw new Error('No access token in response');
+      }
+
+      console.log('Access Token:', data.access_token);
+      const accessToken = data.access_token;
+
+      return fetch(glucoseEndpoint, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`
         }
-        return response.json();
-      })
-      .then(data => {
-        document.getElementById("api-response").innerHTML = JSON.stringify(data, null, 2);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        document.getElementById("api-response").innerHTML = `Error: ${error.message}`;
       });
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch glucose data');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (!data || !data.egvs || data.egvs.length === 0) {
+        throw new Error('No glucose data available');
+      }
+
+      const glucoseData = data.egvs[0];
+      const glucoseValue = glucoseData.value;
+      const glucoseUnit = glucoseData.unit;
+
+      document.getElementById("glucose-data").innerHTML = `Current Glucose : ${glucoseValue} ${glucoseUnit}`;
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      document.getElementById("glucose-data").innerHTML = `Error: ${error.message}`;
+    });
   </script>
 </body>
 </html>
