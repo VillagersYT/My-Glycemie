@@ -15,20 +15,17 @@
     const clientId = "nNXGVFjfc0JPMsWd4pvYOwseT0x0b67x";
     const clientSecret = "LejCpzAJQJnI64QO";
 
-    const tokenEndpoint = "https://sandbox-api.dexcom.com/v3/oauth2/token";
-    const glucoseEndpoint = "https://sandbox-api.dexcom.com/v3/users/self/egvs";
+    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+    const tokenEndpoint = proxyUrl + "https://sandbox-api.dexcom.com/v3/oauth2/token";
+    const glucoseEndpoint = proxyUrl + "https://sandbox-api.dexcom.com/v3/users/self/egvs";
 
     const authorizationCode = "533d33c28705a6c8f06c2a3fde87da30";
-    const redirectUri = "https://villagers-glycemie.netlify.app"; // URL de redirection sur Netlify
+    const redirectUri = "https://villagers-glycemie.netlify.app";
 
     fetch(tokenEndpoint, {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, PATCH, DELETE",
-        "Access-Control-Allow-Headers": "X-Requested-With,content-type",
-        "Access-Control-Allow-Credentials": "true"
+        "Content-Type": "application/x-www-form-urlencoded"
       },
       body: `grant_type=authorization_code&code=${authorizationCode}&redirect_uri=${redirectUri}&client_id=${clientId}&client_secret=${clientSecret}`
     })
@@ -49,11 +46,7 @@
       return fetch(glucoseEndpoint, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, PATCH, DELETE",
-          "Access-Control-Allow-Headers": "X-Requested-With,content-type",
-          "Access-Control-Allow-Credentials": "true"
+          "Authorization": `Bearer ${accessToken}`
         }
       });
     })
